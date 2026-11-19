@@ -28,6 +28,20 @@ describe("isContextOverflowError", () => {
     expect(isContextOverflowError(anthropicRawError)).toBe(true);
   });
 
+  it("matches OpenAI Codex 'exceeds the context window' error format", () => {
+    // gpt-6-astra (Codex) returns a different phrasing than other OpenAI models.
+    // Without this fix, isContextOverflowError returns false and auto-compaction
+    // is not triggered, leaving compactionAttempts=0 and the session unrecovered.
+    const samples = [
+      "Codex error: Your input exceeds the context window of this model. Please adjust your input and try again.",
+      "Your input exceeds the context window of this model.",
+      "exceeds the context window",
+    ];
+    for (const sample of samples) {
+      expect(isContextOverflowError(sample)).toBe(true);
+    }
+  });
+
   it("matches 'exceeds model context window' in various formats", () => {
     const samples = [
       "Request size exceeds model context window",
