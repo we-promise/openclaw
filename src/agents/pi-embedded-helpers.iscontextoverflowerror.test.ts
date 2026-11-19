@@ -40,6 +40,19 @@ describe("isContextOverflowError", () => {
     }
   });
 
+  it("matches Codex / gpt-6-astra 'exceeds the context window' error", () => {
+    // openai/gpt-6-astra returns this format; without this fix, isContextOverflowError
+    // returns false and auto-compaction is never attempted (compactionAttempts=0 in diag).
+    const samples = [
+      "Codex error: Your input exceeds the context window of this model. Please adjust your input and try again.",
+      "Your input exceeds the context window of this model.",
+      "Request exceeds the context window limit.",
+    ];
+    for (const sample of samples) {
+      expect(isContextOverflowError(sample)).toBe(true);
+    }
+  });
+
   it("ignores unrelated errors", () => {
     expect(isContextOverflowError("rate limit exceeded")).toBe(false);
     expect(isContextOverflowError("request size exceeds upload limit")).toBe(false);
